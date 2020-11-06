@@ -1,4 +1,4 @@
-# Version 1.0
+# Version 2.0
 # Por lo general no se requiere modificar el fichero
 
 export PGDATABASE:=classicmodels
@@ -17,7 +17,7 @@ PG_RESTORE = pg_restore
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -ansi -g
 
-all: dropdb createdb restore shell programa
+all: dropdb createdb restore programa
 createdb:
 	@echo Creando BBDD
 	@$(CREATEDB)
@@ -30,11 +30,11 @@ dump:
 	@$(PG_DUMP) > $(DBNAME).sql
 restore:
 	@echo restore data base
-	@cat $(DBNAME).sql | $(PSQL)  
+	@cat $(DBNAME).sql | $(PSQL)
 psql: shell
 shell:
 	@echo create psql shell
-	@$(PSQL)  
+	@$(PSQL)
 
 programa:	programa.o	menu.o	odbc.o consultas.o
 	$(CC) -o $@ $^ $(CFLAGS) -lodbc
@@ -72,4 +72,3 @@ query5:
 query6:
 	@echo query6: "Parejas de productos que aparecen en más de un carro" | tee query6.log
 	@cat query6.sql | $(PSQL) | tee -a query6.log
-
