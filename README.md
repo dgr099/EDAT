@@ -1,4 +1,4 @@
 # EDAT
 database exercises
 
-(06/11/20) Creación de Branch-1
+(06/11/20) Creación de Patch-1
