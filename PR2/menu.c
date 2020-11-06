@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "menu.h"
 /*prototipos de privadas*/
 int ShowProductsMenu();
 int ShowOrdersMenu();
@@ -15,9 +16,11 @@ int ShowMainMenu() {
                      as 'qwerty' */
 
     do {
-        printf("Seleccione la opción que desea\n");
-        printf("1. Products.\n2. Orders.\n3. Customers.\n4. Exit.\n"
-               "Enter a number that corresponds to your choice > ");
+        printf("\n%sMAIN MENU:\n",YEL);
+        puts(SELECT);
+        printf("  1. Products.\n  2. Orders.\n  3. Customers.\n  %s4. Exit.\n",RED);
+        puts(CHOICE);
+
         if (!fgets(buf, 16, stdin))
             /* reading input failed, give up: */
             nSelected =0;
@@ -27,11 +30,14 @@ int ShowMainMenu() {
         printf("\n");
 
         if ((nSelected < 1) || (nSelected > 4)) { /*si no esta entre las opciones*/
-            printf("You have entered an invalid choice. Please try again\n\n\n");
+            puts(ERR);
         }
     } while ((nSelected < 1) || (nSelected > 4)); /*mientrás que sea un numero incorrecto*/
 
-    return nSelected;
+    if( nSelected == 4)
+      return OUT;
+    else
+      return nSelected;
 }
 
 int ShowSubMenu(int *opt){
@@ -40,7 +46,7 @@ int ShowSubMenu(int *opt){
     case 1:
         return ShowProductsMenu();
         break;
-    
+
     case 2:
         return ShowOrdersMenu();
         break;
@@ -60,9 +66,11 @@ int ShowProductsMenu() {
                      as 'qwerty' */
 
     do {
-        printf("Seleccione la opción que desea\n");
-        printf("1. Stock.\n2. Find.\n3. Back.\n"
-               "Enter a number that corresponds to your choice > ");
+        printf("\n%sPRODUCTS MENU:\n",YEL);
+        puts(SELECT);
+        printf("  1. Stock.\n  2. Find.\n%s  3. Back.\n",RED);
+        puts(CHOICE);
+
         if (!fgets(buf, 16, stdin))
             /* reading input failed, give up: */
             nSelected =0;
@@ -72,11 +80,14 @@ int ShowProductsMenu() {
         printf("\n");
 
         if ((nSelected < 1) || (nSelected > 3)) { /*si no esta entre las opciones o si no ha leido nada el fgets*/
-            printf("You have entered an invalid choice. Please try again\n\n\n");
+            puts(ERR);
         }
     } while ((nSelected < 1) || (nSelected > 3)); /*mientrás que sea un numero incorrecto*/
 
-    return nSelected /*retorna la selección*/;
+    if( nSelected == 3)
+      return OUT;
+    else
+      return nSelected;
 }
 
 int ShowOrdersMenu() {
@@ -88,9 +99,11 @@ int ShowOrdersMenu() {
                      as 'qwerty' */
 
     do {
-        printf("Seleccione la opción que desea\n");
-        printf("1. Open.\n2. Range.\n3. Detail.\n4. Back.\n"
-               "Enter a number that corresponds to your choice > ");
+        printf("\n%sORDERS MENU:\n",YEL);
+        puts(SELECT);
+        printf("  1. Open.\n  2. Range.\n  3. Detail.\n  %s4. Back.\n",RED);
+        puts(CHOICE);
+
         if (!fgets(buf, 16, stdin))
             /* reading input failed, give up: */
             nSelected =0;
@@ -100,11 +113,14 @@ int ShowOrdersMenu() {
         printf("\n");
 
         if ((nSelected < 1) || (nSelected > 4)) { /*si no esta entre las opciones o si no ha leido nada el fgets*/
-            printf("You have entered an invalid choice. Please try again\n\n\n");
+            puts(ERR);
         }
     } while ((nSelected < 1) || (nSelected > 4)); /*mientrás que sea un numero incorrecto*/
 
-    return nSelected; /*retorna la selección*/
+    if( nSelected == 4)
+      return OUT;
+    else
+      return nSelected;
 }
 
 int ShowCustomersMenu() {
@@ -116,9 +132,11 @@ int ShowCustomersMenu() {
                      as 'qwerty' */
 
     do {
-        printf("Seleccione la opción que desea\n");
-        printf("1. Find.\n2. List Products.\n3. Balance.\n4. Back.\n"
-               "Enter a number that corresponds to your choice > ");
+        printf("\n%sCUSTOMERS MENU:\n",YEL);
+        puts(SELECT);
+        printf("  1. Find.\n  2. List Products.\n  3. Balance.\n  %s4. Back.\n",RED);
+        puts(CHOICE);
+
         if (!fgets(buf, 16, stdin))
             /* reading input failed, give up: */
             nSelected =0;
@@ -128,11 +146,12 @@ int ShowCustomersMenu() {
         printf("\n");
 
         if ((nSelected < 1) || (nSelected > 4)) { /*si no esta entre las opciones o si no ha leido nada el fgets*/
-            printf("You have entered an invalid choice. Please try again\n\n\n");
+            puts(ERR);
         }
     } while ((nSelected < 1) || (nSelected > 4)); /*mientrás que sea un numero incorrecto*/
 
-    return nSelected; /*retorna la selección*/
-}   
-
-
+    if( nSelected == 4)
+      return OUT;
+    else
+      return nSelected;
+}
