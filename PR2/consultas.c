@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "consultas.h"
 
 /*PROTOTIPOS PRIVADAS*/
 void ConsultasProduct_stock(SQLHDBC *dbc);
@@ -73,6 +74,7 @@ void ConsultasOrders_open(SQLHDBC *dbc)
     }
     SQLCloseCursor(stmt);                 /*cerramos el cursor*/
     SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
+    puts(QRY);
     return;
 }
 
@@ -89,25 +91,24 @@ void ConsultasOrders_Range(SQLHDBC *dbc)
     printf("Enter dates (YYYY-MM-DD - YYYT-MM-DD) > ");
     if(!fgets(buff, 25, stdin)){ /*lees el rango de fechas deseado*/
         /*si hay un error en la lectura*/
-        printf("Error en la introducción de datos\n");
+        puts(QRYERR);
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
         return;
     }
     if(!(tok_1 = strtok(buff, " "))){
         /*si hay un error con los toks*/
-        printf("Error en la introducción de datos\n");
+        puts(QRYERR);
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
         return;
     }
     strtok(NULL, " ");
     if(!(tok_2 = strtok(NULL, "\n"))){
-        /*si hay un con los toks*/
-        printf("Error en la introducción de datos\n");
+        puts(QRYERR);
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
-        return; 
+        return;
     }
     SQLPrepare(stmt, (SQLCHAR *)"SELECT ordernumber, orderdate, shippeddate FROM orders WHERE orderdate>= ? AND orderdate<= ? group by ordernumber", SQL_NTS);
     /*SQLPrepare(stmt, (SQLCHAR*) "SELECT ordernumber FROM orders WHERE orderdate>= '2003-01-10' AND orderdate<= '2003-04-21' group by ordernumber", SQL_NTS);*/
@@ -125,6 +126,7 @@ void ConsultasOrders_Range(SQLHDBC *dbc)
     }
     SQLCloseCursor(stmt);                 /*cerramos el cursor*/
     SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
+    puts(QRY);
     return;
 }
 
@@ -142,7 +144,7 @@ void ConsultasOrders_Details(SQLHDBC *dbc)
     printf("Enter ordernumber > ");
     if(!(fgets(buff, 25, stdin))){
         /*si hay un error en la lectura*/
-        printf("Error en la introducción de datos\n");
+        puts(QRYERR);
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
         return;
@@ -166,6 +168,8 @@ void ConsultasOrders_Details(SQLHDBC *dbc)
     }
     SQLCloseCursor(stmt);
     SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    puts(QRY);
+    return;
 }
 
 void ConsultasProduct_stock(SQLHDBC *dbc)
@@ -175,19 +179,20 @@ void ConsultasProduct_stock(SQLHDBC *dbc)
     char *tok = NULL;
     SQLINTEGER stock;
     printf("Enter productcode > ");
+    puts("\n");
     if(!(fgets(buff, 16, stdin))){ /*lee el productcode deseado*/
         /*si hay un error en la lectura*/
-        printf("Error en la introducción de datos\n");
+        puts(QRYERR);
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
         return;
     }
     if(!(tok = strtok(buff, "\n"))){
         /*si hay un error con los tok*/
-        printf("Error en la introducción de datos\n");
+        puts(QRYERR);
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
-        return; 
+        return;
     }
     SQLAllocHandle(SQL_HANDLE_STMT, *dbc, &stmt);                                                       /*allocate a statement handle*/
     SQLPrepare(stmt, (SQLCHAR *)"Select quantityinstock From products where productcode = ?", SQL_NTS); /*preparamos la consulta*/
@@ -203,6 +208,7 @@ void ConsultasProduct_stock(SQLHDBC *dbc)
 
     SQLCloseCursor(stmt);
     SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos el statement*/
+    puts(QRY);
     return;
 }
 
@@ -217,19 +223,19 @@ void ConsultasProduct_find(SQLHDBC *dbc)
     printf("Enter productname > ");
     if(!(fgets(buff, 16, stdin))){ /*lee el productcode deseado*/
         /*si hay un error en la lectura*/
-        printf("Error en la introducción de datos\n");
+        puts(QRYERR);
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
         return;
     }
     if(!(tok = strtok(buff, "\n"))){
         /*si hay un error con los tok*/
-        printf("Error en la introducción de datos\n");
+        puts(QRYERR);
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
         return;
     }
-    if (!(aux = (char *)calloc(strlen(tok) + 2, sizeof(char)))) 
+    if (!(aux = (char *)calloc(strlen(tok) + 2, sizeof(char))))
     { /*el auxiliar nos servirá para poder poner %text% como parámetro*/
         printf("Error, memoria insuficiente para la consulta\n");
         SQLCloseCursor(stmt);                 /*cerramos el cursor*/
@@ -256,5 +262,6 @@ void ConsultasProduct_find(SQLHDBC *dbc)
     SQLCloseCursor(stmt);
     SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos el statement*/
     free(aux);                            /*liberamos la memoria del auxiliar*/
+    puts(QRY);
     return;
 }
