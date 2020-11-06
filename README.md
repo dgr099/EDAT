@@ -3,7 +3,7 @@ database exercises
 
 (06/11/20) Creación de Patch-1.
   Objetivos:
-    1) Implementación correcta de relación entre menús.
+    1) Implementación correcta de relación entre menús (al terminar una consulta nos mantenemos en el menú desde el que se hizo).
     2) Mejora del intefaz gráfico para facilitar la lectura.
     
   Realizados:
