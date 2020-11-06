@@ -66,7 +66,7 @@ int ShowProductsMenu() {
                      as 'qwerty' */
 
     do {
-        printf("\n%sPRODUCTS MENU:\n",YEL);
+        printf("%sPRODUCTS MENU:\n",YEL);
         puts(SELECT);
         printf("  1. Stock.\n  2. Find.\n%s  3. Back.\n",RED);
         puts(CHOICE);
@@ -99,7 +99,7 @@ int ShowOrdersMenu() {
                      as 'qwerty' */
 
     do {
-        printf("\n%sORDERS MENU:\n",YEL);
+        printf("%sORDERS MENU:\n",YEL);
         puts(SELECT);
         printf("  1. Open.\n  2. Range.\n  3. Detail.\n  %s4. Back.\n",RED);
         puts(CHOICE);
@@ -132,7 +132,7 @@ int ShowCustomersMenu() {
                      as 'qwerty' */
 
     do {
-        printf("\n%sCUSTOMERS MENU:\n",YEL);
+        printf("%sCUSTOMERS MENU:\n",YEL);
         puts(SELECT);
         printf("  1. Find.\n  2. List Products.\n  3. Balance.\n  %s4. Back.\n",RED);
         puts(CHOICE);

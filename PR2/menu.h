@@ -10,9 +10,9 @@
 #define OUT -1 /*OUT => salir del menu*/
 
 /*strings que se usan repetidamente*/
-#define SELECT "\x1B[33m Select any option\x1B[0m"
+#define SELECT "\x1B[33m Select any option:\x1B[0m"
 #define CHOICE "\x1B[34m Enter a number that corresponds to your choice > \x1B[0m\b"
-#define ERR "\t\tWrong Input. Please try again.\n\n"
+#define ERR "Wrong Input. Please try again\n"
 
 int ShowMainMenu();
 int ShowSubMenu(int *opt);

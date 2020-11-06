@@ -51,6 +51,9 @@ odbc.o: odbc.c odbc.h
 consultas.o: consultas.c consultas.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+clean:
+	rm *.o
+
 allqueries: query1 query2 query3 query4 query5 query6
 	@cat query?.log > all_queries.log
 
