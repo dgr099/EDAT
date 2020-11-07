@@ -30,7 +30,11 @@ int main(){
             case 2: /*si es 2 llama a las consultas de orders*/
                 ConsultasOrders(&sub_opt, &dbc);
                 break;
-        }
+            case 3:
+                ConsultasCustomers(&sub_opt, &dbc);
+            default:
+                break;
+        }   
     }while(opt!=4); /*mientras que no quieras salir del programa pedirá instrucciones*/
     printf("Disconnecting...\n");
     /* DISCONNECT */
