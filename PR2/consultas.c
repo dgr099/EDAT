@@ -5,7 +5,7 @@
 #include <string.h>
 
 /*PROTOTIPOS PRIVADAS*/
-void ConsultasProduct_Stock(SQLHDBC *dbc);
+void Consulroduct_Stock(SQLHDBC *dbc);
 void ConsultasProduct_Find(SQLHDBC *dbc);
 void ConsultasOrders_Open(SQLHDBC *dbc);
 void ConsultasOrders_Range(SQLHDBC *dbc);
