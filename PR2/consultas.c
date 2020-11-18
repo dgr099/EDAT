@@ -37,7 +37,7 @@ void ConsultasProduct(int *opt, SQLHDBC *dbc)
     return;
 }
 
-void ConsultasOrders(i*opt, SQLHDBC *dbc)
+void ConsultasOrders(int *opt, SQLHDBC *dbc)
 {
     switch (*opt)
     {
