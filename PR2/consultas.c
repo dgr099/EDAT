@@ -6,7 +6,7 @@
 
 /*PROTOTIPOS PRIVADAS*/
 void ConsultasProduct_Stock(SQLHDBC *dbc);
-void ConsultasProduct_Find(SQLHDBC *dbc);
+void Consultaroduct_Find(SQLHDBC *dbc);
 void ConsultasOrders_Open(SQLHDBC *dbc);
 void ConsultasOrders_Range(SQLHDBC *dbc);
 void ConsultasOrders_Details(SQLHDBC *dbc);
