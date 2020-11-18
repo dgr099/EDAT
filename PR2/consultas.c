@@ -3,16 +3,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#define ROWSET_SIZE 1
 /*PROTOTIPOS PRIVADAS*/
 void ConsultasProduct_Stock(SQLHDBC *dbc);
-void Consultaroduct_Find(SQLHDBC *dbc);
+void ConsultasProduct_Find(SQLHDBC *dbc);
 void ConsultasOrders_Open(SQLHDBC *dbc);
 void ConsultasOrders_Range(SQLHDBC *dbc);
 void ConsultasOrders_Details(SQLHDBC *dbc);
 void ConsultasCustomers_Find(SQLHDBC *dbc);
-void ConsultasOrders_Balance(SQLHDBC *dbc);
+void ConsultasCustomers_Balance(SQLHDBC *dbc);
 void ConsultasCustomers_ListProducts(SQLHDBC *dbc);
+int Consultas_10(SQLHSTMT *stmt, int *pag, int aux, int *pag_aux);
+void Cursor_config(SQLHSTMT *stmt);
 /*FIN PROTOTIPOS PRIVADAS*/
 
 void ConsultasProduct(int *opt, SQLHDBC *dbc)
@@ -77,7 +79,7 @@ void ConsultasCustomers(int *opt, SQLHDBC *dbc)
     }
     case 3:
     { /*Ha seleccionado balance*/
-        ConsultasOrders_Balance(dbc);
+        ConsultasCustomers_Balance(dbc);
         break;
     }
     default:
@@ -92,6 +94,7 @@ void ConsultasOrders_Open(SQLHDBC *dbc)
     SQLINTEGER onumber;
     SQLAllocHandle(SQL_HANDLE_STMT, *dbc, &stmt); /*allocate a statement handle*/
     /*aquí no necesita leer nada, va a mostrar los que aun no se han enviado*/
+    Cursor_config(stmt);
     SQLPrepare(stmt, (SQLCHAR *)"SELECT ordernumber from orders where shippeddate is NULL group by ordernumber", SQL_NTS); /*prepara la consulta*/
     SQLExecute(stmt);                                                                                                      /*ejecutamos la consulta*/
     SQLBindCol(stmt, 1, SQL_C_LONG, &onumber, sizeof(onumber), NULL);                                                      /*solo hay una columna resultante de la consulta que es el code*/
@@ -277,7 +280,7 @@ void ConsultasProduct_Find(SQLHDBC *dbc)
     SQLBindCol(stmt, 2, SQL_C_CHAR, &name, sizeof(name), NULL); /*la segunda columna es el name*/
 
     /* Loop through the rows in the result-set */
-    while (SQL_SUCCEEDED(SQLFetch(stmt)))
+    while (SQL_SUCCEEDED(SQLFetchScroll(stmt, SQL_FETCH_NEXT, 0)))
     {                                   /*si encuentra la consulta*/
         printf("%s\t%s\n", code, name); /*imprime el valor de la consulta*/
     }
@@ -297,8 +300,11 @@ void ConsultasCustomers_Find(SQLHDBC *dbc)
     char buff[16];
     char *tok = NULL;
     char *aux = NULL;
+    int pag, pag_aux;
+    pag=pag_aux=0;
     printf("Enter customer name > ");
     SQLAllocHandle(SQL_HANDLE_STMT, *dbc, &stmt); /*allocate a statement handle*/
+    Cursor_config(stmt);
     if(!(fgets(buff, 16, stdin))){ /*lee el nombre deseado*/
         /*si hay un error en la lectura*/
         printf("Error en la introducción de datos\n");
@@ -333,20 +339,40 @@ void ConsultasCustomers_Find(SQLHDBC *dbc)
     SQLBindCol(stmt, 2, SQL_C_CHAR, &cname, sizeof(cname), NULL); /*la segunda columna es el customer name*/
     SQLBindCol(stmt, 3, SQL_C_CHAR, &cfname, sizeof(cfname), NULL); /*la segunda columna es el contact first name*/
     SQLBindCol(stmt, 4, SQL_C_CHAR, &clname, sizeof(clname), NULL); /*la segunda columna es el contact last name*/
-
-
-    /* Loop through the rows in the result-set */
-    while (SQL_SUCCEEDED(SQLFetch(stmt)))
-    {                                   /*si encuentra la consulta*/
+    inicio_CF:
+    while (SQL_SUCCEEDED(SQLFetchScroll(stmt, SQL_FETCH_NEXT, 0)))
+    {   
+        /*si encuentra la consulta siguiente*/
         printf("%d\t%s\t%s\t%s\n", cnumber, cname, cfname, clname); /*imprime el valor de la consulta*/
+        pag_aux++; /*suma 1 al valor de los valores mostrados en esta pag*/
+        if(pag_aux==10){ /*si ya has terminado con los 10 de la página*/  
+            if(Consultas_10(&stmt, &pag, 0, &pag_aux)==1)/*llama a consultas_10 para consultar que acción ejecutar*/
+                goto fin_CF; /*si retorna un 1 indica que el usuario quiere salir*/
+            if(pag==0){ /*para que no se salte el primer valor*/
+                printf("%d\t%s\t%s\t%s\n", cnumber, cname, cfname, clname); /*imprime el valor de la consulta*/
+                pag_aux++; /*suma 1 al valor de los valores mostrados en esta pag*/
+            }
+        }
     }
+    /*si ha llegado a este punto es que está en el final*/
+    if(Consultas_10(&stmt, &pag, 1, &pag_aux)==0){
+        pag_aux=0;
+        if(pag==0){
+            pag_aux++;
+            printf("%d\t%s\t%s\t%s\n", cnumber, cname, cfname, clname); /*imprime el valor de la consulta*/
+
+        }
+        
+        goto inicio_CF;
+    }
+    fin_CF:
     SQLCloseCursor(stmt);
     SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos el statement*/
     free(aux);                            /*liberamos la memoria del auxiliar*/
     return;
 }
 
-void ConsultasOrders_Balance(SQLHDBC *dbc){
+void ConsultasCustomers_Balance(SQLHDBC *dbc){
     SQLHSTMT stmt1;
     SQLHSTMT stmt2;
     SQLDOUBLE pagos;
@@ -393,6 +419,7 @@ void ConsultasOrders_Balance(SQLHDBC *dbc){
     SQLFreeHandle(SQL_HANDLE_STMT, stmt2);
     return;    
 }
+
 void ConsultasCustomers_ListProducts(SQLHDBC *dbc){
     SQLHSTMT stmt;
     SQLINTEGER cnumber;
@@ -400,6 +427,8 @@ void ConsultasCustomers_ListProducts(SQLHDBC *dbc){
     SQLCHAR name[70];
     char buff[16];
     char *tok=NULL;
+
+    int pag_aux=0, pag=0;
     printf("Enter customernumber > ");
     SQLAllocHandle(SQL_HANDLE_STMT, *dbc, &stmt);
     if(!(fgets(buff, 16, stdin))){ /*lee el productcode deseado*/
@@ -409,32 +438,116 @@ void ConsultasCustomers_ListProducts(SQLHDBC *dbc){
         SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos la consulta*/
         return;
     }
+    Cursor_config(stmt); /*configuramos el cursor*/
+    /*SQLSetStmtAttr((stmt), SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER) ROWSET_SIZE,0);*/
     tok=strtok(buff, "\n");
     cnumber=atoi(tok);
     SQLPrepare(stmt, (SQLCHAR *)"select p.productname, sum(od.quantityordered) from customers c join orders o on c.customernumber=o.customernumber join orderdetails od on od.ordernumber=o.ordernumber join products p on p.productcode=od.productcode where c.customernumber=? group by p.productcode, od.productcode order by od.productcode;", SQL_NTS);
     SQLBindParameter(stmt, 1, SQL_PARAM_INPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &cnumber, 0, NULL);
     SQLExecute(stmt);
-    SQLBindCol(stmt, 1, SQL_C_CHAR, &name, sizeof(name), NULL); 
-    SQLBindCol(stmt, 2, SQL_C_LONG, &sum, sizeof(sum), NULL); 
-    while (SQL_SUCCEEDED(SQLFetch(stmt)))
-    {                                   /*si encuentra la consulta*/
+    SQLBindCol(stmt, 1, SQL_C_CHAR, &name, sizeof(name), NULL);       
+    SQLBindCol(stmt, 2, SQL_C_LONG, &sum, sizeof(sum), NULL);
+inicio_CLP:
+    while (SQL_SUCCEEDED(SQLFetchScroll(stmt, SQL_FETCH_RELATIVE, 1)))
+    {   
+        /*si encuentra la consulta siguiente*/
         printf("%s\t%d\n", name, sum); /*imprime el valor de la consulta*/
+        pag_aux++; /*suma 1 al valor de los valores mostrados en esta pag*/
+        if(pag_aux==10){ /*si ya has terminado con los 10 de la página*/  
+            if(Consultas_10(&stmt, &pag, 0, &pag_aux)==1)/*llama a consultas_10 para consultar que acción ejecutar*/
+                goto fin_CLP; /*si retorna un 1 indica que el usuario quiere salir*/
+            if(pag==0){ /*para que no se salte el primer valor*/
+                printf("%s\t%d\n", name, sum); /*imprime el valor de la consulta*/
+                pag_aux++; /*suma 1 al valor de los valores mostrados en esta pag*/
+            }
+        }
     }
+    /*si ha llegado a este punto es que está en el final*/
+    if(Consultas_10(&stmt, &pag, 1, &pag_aux)==0){
+        pag_aux=0;
+        if(pag==0){
+            pag_aux++;
+            printf("%s\t%d\n", name, sum); /*imprime el valor de la consulta*/
+        }
+        
+        goto inicio_CLP;
+    }
+    fin_CLP:
     SQLCloseCursor(stmt);
     SQLFreeHandle(SQL_HANDLE_STMT, stmt); /*liberamos el statement*/
     return; 
 }
-/*
-        if(pag_aux==10){ /*si ya has terminado con los 10 de la página
-            if(pag>0){ /*si la pagina no es la primer
-                printf("press < to go back 10 results or press > to show more results or s to stop: ");
-                ind=(char)fgetc(stdin);
-                if(ind!='<' && ind!='>' && ind!='s'){ /*si no está en ninguna de las opciones posibles
 
+void Cursor_config(SQLHSTMT *stmt){
+    SQLSetStmtAttr((stmt), SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER) ROWSET_SIZE,0);
+    SQLSetStmtAttr((stmt), SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER) 1, 0);
+    SQLSetStmtAttr((stmt), SQL_ATTR_CURSOR_TYPE, (SQLPOINTER) SQL_CURSOR_STATIC, 0);
+    return;
+}
+
+int Consultas_10(SQLHSTMT *stmt, int *pag, int aux, int *pag_aux){
+    char ind='\0';
+    if(aux==0){ /*si no esta al final*/
+        if((*pag)>0){ /*si la pagina no es la primer resultado y aún quedan resultados porque dió succeeded*/
+            do{
+                printf("press < to go back or press > to continue or s to stop: ");
+                ind=getchar();
+                getchar(); /*para eliminar el \n*/
+                if(ind!='<' && ind!='>' && ind!='s'){ /*si no está en ninguna de las opciones posibles*/
+                    printf("You have entered an invalid choice. Please try again\n\n\n");
                 }
-            }
-            else
-                printf("press > to show more results: ");
-            ind=(char)fgetc(stdin);
+            }while(ind!='<' && ind!='>' && ind!='s');
         }
-        */
+        /*es la primera pag de resultados, no puede mostrar resultados anteriores*/
+        else{
+            do{
+                printf("press > to continue or s to stop: ");
+                ind=getchar();
+                getchar(); /*para quitar el \n*/
+                if(ind!='>' && ind!='s'){ /*si no está en ninguna de las opciones posibles*/
+                    printf("You have entered an invalid choice. Please try again\n\n\n");
+                }
+            }while(ind!='>' && ind!='s');
+        }
+        if(ind=='s')/*si selecciono el stop*/
+            return 1;
+        if(ind=='<'){ /*si quiere ir para atrás*/
+            if(SQL_SUCCEEDED(SQLFetchScroll(*stmt, SQL_FETCH_RELATIVE, (-10-(*pag_aux))))){ /*20 consultas para atras para que muestre las 10 anteriores*/
+                (*pag)--;
+                (*pag_aux)=0; /*actualizas el valor de pag_aux*/
+                return 0;
+            }
+            /*en caso de error*/
+            return 1;
+        }
+        /*caso contrario quiere seguir*/
+        (*pag)++; /*sumamos uno al numero de paginas (principalmente para saber que no estamos en la primera pag)*/
+        (*pag_aux)=0; /*actualizas el valor de pag_aux*/
+        return 0; 
+    }
+    /*si está al final*/
+    else{
+        if((*pag)>0){ /*si la pagina no es la primer resultado*/
+            do{
+                printf("press < to go back or s to stop: ");
+                ind=getchar();
+                getchar(); /*para eliminar el \n*/
+                if(ind!='<' && ind!='s'){ /*si no está en ninguna de las opciones posibles*/
+                    printf("You have entered an invalid choice. Please try again\n\n\n");
+                }
+            }while(ind!='<' && ind!='s');
+            if(ind=='s')
+                return 1;
+            else{
+                if(SQL_SUCCEEDED(SQLFetchScroll(*stmt, SQL_FETCH_RELATIVE, -10-(++(*pag_aux))))){ /*20 consultas para atras para que muestre las 10 anteriores*/
+                    (*pag)--;
+                    (*pag_aux)=0; /*actualizas el valor de pag_aux*/
+                    return 0;
+                }
+                /*en caso de error*/
+                return 1;
+            }
+        }
+    }
+    return 1;
+}
