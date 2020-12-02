@@ -4,7 +4,8 @@
 #include <string.h>
 #include "func.h"
 
-bool createTable ( const char * tableName){
+bool createTable ( const char * tab
+Name){
     FILE *f=NULL;
     char *aux=NULL;
     int tam=0;
