@@ -1,0 +1,22 @@
+CC = gcc -g
+CFLAGS = -Wall -Wextra -pedantic -ansi
+
+HEADERS = utils.h
+
+programa: programa.o menu.o utils.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+programa.o: programa.c menu.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+menu.o:	menu.c menu.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+utils.o:	utils.c utils.h
+	$(CC) $(CFLAGS) -c -o$@ $<
+
+run: programa 
+	./programa
+
+clean :
+	rm -f *.o core $(EXE)
