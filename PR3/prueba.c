@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "func.h"
+#include "utils.h"
 int main(){
     FILE *f=NULL;
     int i=-1;
     char pkey[PK_SIZE+1];
+    createTable("try.dat");
     f=fopen("try.idx", "wb");
     /*para probar los índices como vienen en el pdf*/
     i=0;    fwrite(&i, sizeof(int), 1, f);
@@ -85,7 +86,10 @@ int main(){
     fclose(f);
     printTree(4, "try.idx");
     strcpy(pkey, "BAR1");
-    /*findKey(pkey, "try.idx", &pr);*/
+    i=450;
+    addIndexEntry(pkey, i, "try.idx");
+    printf("\n\n");
+    printTree(5, "try.idx");
     /*createTable("prueba.dat");*/
     return 0;
 }
