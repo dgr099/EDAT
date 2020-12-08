@@ -7,7 +7,7 @@
 
 bool createTable ( const char * tableName){
     FILE *f=NULL;
-    char *aux=NULL;
+    char *aux=NULL
     int tam=0;
     int i=-1; /*en i guardamos el offset del elemento borrado (-1) porque es una tabla sin datos y sin nada borrado*/
     if(!tableName){ /*comprobacion de parametros*/
